@@ -120,6 +120,3 @@ Respond in JSON format:
 };
 
 export default useAI;
-
-export { useAI };
-export { useAI }
