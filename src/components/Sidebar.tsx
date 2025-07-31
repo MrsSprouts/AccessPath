@@ -88,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <div className="w-80 bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
+    <div className="w-80 bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700 flex flex-col h-screen overflow-hidden">
       {/* Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -148,7 +148,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Controls */}
-      <div className="p-4 space-y-4 flex-1">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 space-y-4">
         {/* Theme Toggle */}
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -240,14 +241,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
           
           {showSummary && (
-            <div className="mt-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="mt-3 p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg border border-purple-200 dark:border-purple-700 shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-medium text-gray-900 dark:text-white">
                   Area Analysis
                 </h4>
                 <button
                   onClick={() => setShowSummary(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  className="text-purple-400 hover:text-purple-600 dark:hover:text-purple-300 transition-colors"
                   aria-label="Close summary"
                 >
                   <X size={16} />
@@ -264,7 +265,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="max-h-48 overflow-y-auto">
+                <div className="max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-purple-300 dark:scrollbar-thumb-purple-600 scrollbar-track-transparent">
                   <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
                     {aiSummary}
                   </div>
@@ -272,6 +273,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               )}
             </div>
           )}
+        </div>
         </div>
       </div>
 
