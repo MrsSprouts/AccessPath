@@ -14,6 +14,63 @@ const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const useAI = () => {
   const [loading, setLoading] = useState(false);
 
+  const summarizeArea = async ({ points }: { points: any[] }) => {
+    setLoading(true);
+    try {
+      // Create a description of the accessibility points for AI analysis
+      const barriers = points.filter(p => p.type === 'barrier');
+      const facilitators = points.filter(p => p.type === 'facilitator');
+      const pois = points.filter(p => p.type === 'poi');
+      
+      const description = `
+Accessibility Analysis Request:
+- ${barriers.length} barriers found: ${barriers.map(b => b.tags?.barrier || 'unknown').join(', ')}
+- ${facilitators.length} facilitators found: ${facilitators.map(f => f.tags?.amenity || 'unknown').join(', ')}
+- ${pois.length} accessible places found: ${pois.map(p => `${p.tags?.amenity || 'place'} (${p.tags?.wheelchair || 'unknown'})`).join(', ')}
+
+Please provide an accessibility summary of this area.
+      `.trim();
+
+      const prompt = `
+You are an accessibility expert analyzing an area. Based on the accessibility data below, provide a comprehensive summary.
+
+${description}
+
+Provide a detailed analysis covering:
+1. Overall accessibility rating
+2. Key barriers to watch out for
+3. Available accessibility features
+4. Recommendations for navigation
+
+Keep the response conversational and helpful for someone planning to navigate this area.
+      `.trim();
+
+      const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+              role: 'user'
+            }
+          ],
+        })
+      });
+
+      const data = await response.json();
+      const summary = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Unable to generate summary at this time.';
+      return summary;
+    } catch (error: any) {
+      console.error('AI summary error:', error);
+      return 'Sorry, unable to generate summary at this time. Please try again later.';
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const generateAIResponse = async (description: string): Promise<AIResponse> => {
     setLoading(true);
     try {
@@ -58,8 +115,11 @@ Respond in JSON format:
   };
 
   return { generateAIResponse, loading };
+
+  return { generateAIResponse, summarizeArea, loading };
 };
 
 export default useAI;
 
+export { useAI };
 export { useAI }
