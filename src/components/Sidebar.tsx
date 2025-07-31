@@ -1,4 +1,5 @@
 import React from 'react';
+import React, { useState } from 'react';
 import { 
   Eye, 
   EyeOff, 
@@ -10,10 +11,14 @@ import {
   Sun,
   LogIn,
   LogOut,
-  User
+  User,
+  Brain,
+  Loader2,
+  X
 } from 'lucide-react';
-import { MapLayers } from '../types';
+import { MapLayers, AccessibilityPoint } from '../types';
 import { useAuth } from '../hooks/useAuth';
+import { useAI } from '../hooks/useAI';
 
 interface SidebarProps {
   layers: MapLayers;
@@ -21,6 +26,9 @@ interface SidebarProps {
   onReportClick: () => void;
   isDark: boolean;
   onThemeToggle: () => void;
+  barriers: AccessibilityPoint[];
+  facilitators: AccessibilityPoint[];
+  pois: AccessibilityPoint[];
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -28,10 +36,31 @@ const Sidebar: React.FC<SidebarProps> = ({
   onLayerToggle, 
   onReportClick,
   isDark,
-  onThemeToggle 
+  onThemeToggle,
+  barriers,
+  facilitators,
+  pois
 }) => {
   const { user, signInAnonymous, signInWithGoogle, logout } = useAuth();
+  const { summarizeArea } = useAI();
+  const [aiSummary, setAiSummary] = useState<string>('');
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
+  const handleAISummary = async () => {
+    setIsLoadingSummary(true);
+    setShowSummary(true);
+    
+    try {
+      const allPoints = [...barriers, ...facilitators, ...pois];
+      const summary = await summarizeArea({ points: allPoints });
+      setAiSummary(summary);
+    } catch (error) {
+      setAiSummary('Sorry, unable to generate summary at this time. Please try again later.');
+    } finally {
+      setIsLoadingSummary(false);
+    }
+  };
   const layerConfig = [
     {
       key: 'barriers' as keyof MapLayers,
@@ -189,6 +218,61 @@ const Sidebar: React.FC<SidebarProps> = ({
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
             Right-click or long-press on the map to report
           </p>
+        </div>
+
+        {/* AI Summary Section */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+            AI Insights
+          </h3>
+          <button
+            onClick={handleAISummary}
+            disabled={isLoadingSummary}
+            className="w-full flex items-center justify-center space-x-2 p-3 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 dark:disabled:bg-purple-800 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
+          >
+            {isLoadingSummary ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Brain size={18} />
+            )}
+            <span className="font-medium">
+              {isLoadingSummary ? 'Summarizing...' : 'AI Summary'}
+            </span>
+          </button>
+          
+          {showSummary && (
+            <div className="mt-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                  Area Analysis
+                </h4>
+                <button
+                  onClick={() => setShowSummary(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  aria-label="Close summary"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              
+              {isLoadingSummary ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <Loader2 size={24} className="animate-spin text-purple-600 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Analyzing accessibility data...
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-h-48 overflow-y-auto">
+                  <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                    {aiSummary}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

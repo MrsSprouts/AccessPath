@@ -52,6 +52,9 @@ function App() {
           onReportClick={handleReportClick}
           isDark={isDark}
           onThemeToggle={toggleTheme}
+          barriers={barriers}
+          facilitators={facilitators}
+          pois={pois}
         />
         
         <div className="flex-1 p-4">
